@@ -10,7 +10,11 @@
 <script type="text/javascript">
 
     	var canvas = document.getElementById("myCanvas");
-
+    	// Gravity, how fast it goes down
+    	var gravity = 0.1;
+    	var j = 10;
+    	// Whether or not the up key is pressed
+		var keypressed = false;
     	var sources = {
         bg: './assets/bg.jpg',
         ground: './assets/ground.png',
@@ -21,21 +25,70 @@
 	
 		// Make sure the image is loaded first otherwise nothing will draw.
 	  	loadImages(sources, function(images) {
-        	ctx.drawImage(images.bg, 0,0);
   
-			var j=10;
-			for (var i = 0; i*(images.ground.width) < canvas.width ; i++) {
-				ctx.drawImage(images.ground, i*(images.ground.width), 400);
-	  		}
-			setInterval(function(){
-					for (var i = 0; i*(images.ground.width)-j < canvas.width ; i++) {
-				ctx.drawImage(images.ground, i*(images.ground.width)-j, 400);
-	  		}
-	  		j++;
-			}, 10);
-			
+  			function Sjoe(x, y) {
+    			this.x = x;
+    			this.y = y;
+    			// How fast we are moving
+    			this.velocity = 10;
+    			this.image =images.sjoe ;
 
-			ctx.drawImage(images.sjoe, 400,images.ground.height+150,80,160);
+			}
+			Sjoe.prototype.draw = function () {
+    			ctx.drawImage(this.image, this.x, this.y,80,160);
+			}
+			Sjoe.prototype.update = function() {
+		    	// Check if we are underground
+    			if (this.y + this.velocity + 36 > 275) {
+        			// If so, move us back to ground level and set velocity to zero
+        			this.velocity = 0;
+        			this.y = 275 - 36;
+    			} else {
+        			// Otherwise, move what is indicated by velocity
+        			this.velocity += gravity;
+        			this.y += this.velocity;
+    			}	 
+			}
+			var sjoe1 = new Sjoe(400, 275);
+			var requestAnim = window.requestAnimationFrame ||
+                    window.webkitRequestAnimationFrame ||
+                    window.mozRequestAnimationFrame ||
+                    setInterval;
+
+            requestAnim(function loop() {
+    			// Clear the screen
+    			ctx.clearRect(0, 0, canvas.width, canvas.height);
+    			ctx.drawImage(images.bg, 0,0);
+    			for (var i = 0; i*(images.ground.width)-j < canvas.width ; i++) {
+				ctx.drawImage(images.ground, i*(images.ground.width)-j, 400);
+	  			}
+	  			j++;
+    	    			// Redraw the grass where it is supposed to be
+    			sjoe1.draw();
+    			// If the key is pressed, set velocity to -5
+    			if (keypressed) {
+        			sjoe1.velocity = -5;
+        			keypressed = false;
+    			}
+    			sjoe1.update();
+    			// Do again
+    			requestAnim(loop);
+			});
+			document.addEventListener('keydown', function (e) {
+    
+    			if (e.keyCode == '32') {
+        			keypressed = true;
+    			}
+			}, false);
+			$( "#myCanvas" ).click(function() {
+  				keypressed = true;
+			});
+
+
+
+
+
+	
 			
 	  });
         
