@@ -12,13 +12,14 @@
     	var canvas = document.getElementById("myCanvas");
     	// Gravity, how fast it goes down
     	var gravity = 0.1;
-    	var j = 10;
+    	var j = 15;
     	// Whether or not the up key is pressed
 		var keypressed = false;
     	var sources = {
         bg: './assets/bg.jpg',
         ground: './assets/ground.png',
-        sjoe: './assets/sjoe.png'
+        sjoe: './assets/sjoe.png',
+        alian: './assets/alian.png'
       };
 
 		var ctx = canvas.getContext("2d");
@@ -59,8 +60,13 @@
     			// Clear the screen
     			ctx.clearRect(0, 0, canvas.width, canvas.height);
     			ctx.drawImage(images.bg, 0,0);
-    			for (var i = 0; i*(images.ground.width)-j < canvas.width ; i++) {
-				ctx.drawImage(images.ground, i*(images.ground.width)-j, 400);
+                // ctx.drawImage(images.alian, 400-(j/3),250,60,60);
+                // for (var i = 0; i*(images.bg.width)-(j/2) < canvas.width ; i++) {
+                //     ctx.drawImage(images.bg, i*(images.bg.width)-(j/2), 0);
+                // }
+
+    			for (var i = 0; i*(images.ground.width)-(j) < canvas.width ; i++) {
+				ctx.drawImage(images.ground, i*(images.ground.width)-(j) , 400);
 	  			}
 	  			j++;
     	    			// Redraw the grass where it is supposed to be
@@ -80,7 +86,7 @@
         			keypressed = true;
     			}
 			}, false);
-			$('#myCanvas').on('click touchstart', function () { 
+			$('#myCanvas').on('isMobile ? 'touchend' : 'click', function () { 
   				keypressed = true; 
 			});
 
