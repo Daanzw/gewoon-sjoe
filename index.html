@@ -80,8 +80,8 @@
         			keypressed = true;
     			}
 			}, false);
-			$( "#myCanvas" ).click(function() {
-  				keypressed = true;
+			$('#myCanvas').on('click touchstart', function () { 
+  				keypressed = true; 
 			});
 
 
