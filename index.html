@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>gewoon sjoe</title>
+</head>
+<body>
+<canvas  id="myCanvas" width="1024" height="470"></canvas>
+<script src="./bower_components/jquery/dist/jquery.min.js"></script>
+<script src="https://code.createjs.com/createjs-2015.11.26.min.js"></script>
+<script type="text/javascript">
+
+    	var canvas = document.getElementById("myCanvas");
+
+    	var sources = {
+        bg: './assets/bg.jpg',
+        ground: './assets/ground.png',
+        sjoe: './assets/sjoe.png'
+      };
+
+		var ctx = canvas.getContext("2d");
+	
+		// Make sure the image is loaded first otherwise nothing will draw.
+	  	loadImages(sources, function(images) {
+        	ctx.drawImage(images.bg, 0,0);
+  
+			var j=10;
+			for (var i = 0; i*(images.ground.width) < canvas.width ; i++) {
+				ctx.drawImage(images.ground, i*(images.ground.width), 400);
+	  		}
+			setInterval(function(){
+					for (var i = 0; i*(images.ground.width)-j < canvas.width ; i++) {
+				ctx.drawImage(images.ground, i*(images.ground.width)-j, 400);
+	  		}
+	  		j++;
+			}, 10);
+			
+
+			ctx.drawImage(images.sjoe, 400,images.ground.height+150,80,160);
+			
+	  });
+        
+ 
+
+
+	  function loadImages(sources, callback) {
+        var images = {};
+        var loadedImages = 0;
+        var numImages = 0;
+        // get num of sources
+        for(var src in sources) {
+          numImages++;
+        }
+        for(var src in sources) {
+          images[src] = new Image();
+          images[src].onload = function() {
+            if(++loadedImages >= numImages) {
+              callback(images);
+            }
+          };
+          images[src].src = sources[src];
+        }
+      }
+</script>
+
+</body>
+</html>
