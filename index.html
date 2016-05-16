@@ -1,21 +1,107 @@
 <!DOCTYPE html>
 <html>
 <head>
+      <meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
     <title>gewoon sjoe</title>
 </head>
 <body>
-<canvas  id="myCanvas" width="1024" height="470"></canvas>
+<!-- <canvas  id="myCanvas" width="1024" height="470"></canvas> -->
 <script src="./bower_components/jquery/dist/jquery.min.js"></script>
-<script src="https://code.createjs.com/createjs-2015.11.26.min.js"></script>
+<script src="./phaser.min.js"></script>
 <script type="text/javascript">
+   var game = new Phaser.Game(1024, 500, Phaser.AUTO, '', { preload: preload, create: create, update: update, checkPos: checkPos, collisionHandler : collisionHandler, });
+    function preload () {
+
+            game.load.image('bg', './assets/bg.jpg');
+            game.load.image('sjoe', 'assets/sjoe.png'); 
+            game.load.image('ground', 'assets/ground.png'); 
+            game.load.image('penny', 'assets/penny.png'); 
+
+        }
+
+        var sjoe;
+        var ground;
+        var spaceKey;
+        var penniesGroup;
+        var text;
+        var count;
+        function create () {
+            game.add.tileSprite(0, 0, 1024, 420, 'bg');
+            game.physics.startSystem(Phaser.Physics.ARCADE);
+            penniesGroup = game.add.physicsGroup();
+            count = 0;
+            for (var i = 0; i < 20; i++)
+            {
+                var pennies = penniesGroup.create(1024+Math.floor((Math.random() * 2000) + 1), Math.floor((Math.random() * 380) + 1), 'penny');
+                pennies.body.velocity.x = -200;        
+                pennies.scale.setTo(0.015,0.015);
+
+            }
+            sjoe = game.add.sprite(400, 200,'sjoe');
+            sjoe.scale.setTo(0.25, 0.25);
+            game.physics.arcade.enable(sjoe, Phaser.Physics.ARCADE);
+
+            sjoe.body.velocity.y=2000;
+            sjoe.body.collideWorldBounds = false;
+            sjoe.body.bounce.set(0);
+            sjoe.body.gravity.y=400;
+
+            ground = this.game.add.tileSprite(0,420 , 1024, 80, 'ground');
+            game.physics.arcade.enable(ground, Phaser.Physics.ARCADE);
+            ground.autoScroll(-200, 0);
+            ground.body.allowGravity = false;
+            ground.body.immovable = true;
+
+            this.spaceKey = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+            game.input.keyboard.addKeyCapture(Phaser.Keyboard.SPACEBAR)
+
+
+            text = game.add.text(0, 0, "Coins: 0", {
+                font: "24px Arial",
+                fill: "#fff",
+            });
+
+      
+             
+                    
+
+
+        }
+        function update () {
+            game.physics.arcade.overlap(sjoe, penniesGroup, collisionHandler, null, this);
+            game.physics.arcade.collide(sjoe,ground ); 
+             if (this.spaceKey.isDown){
+                sjoe.body.velocity.y = -250;
+             }
+               penniesGroup.forEach(checkPos, this);
+        }      
+
+        
+        function checkPos(pennies) {
+            if (pennies.x < -20)
+            {
+                pennies.x = 1024+Math.floor((Math.random() * 2000) + 1);
+            }
+
+        }
+        function collisionHandler(player , coin) {
+            coin.x = 1024+Math.floor((Math.random() * 2000) + 1);
+            count ++;
+
+             text.setText("Coins: " + count );
+
+        }
+
+</script>
+<!-- <script type="text/javascript">
 
     	var canvas = document.getElementById("myCanvas");
     	// Gravity, how fast it goes down
     	var gravity = 0.3;
-    	var j = 5;
+    	var j = 0;
         var spaces = new Array();
-
+        var coins = 10000;
     	// Whether or not the up key is pressed
 		var keypressed = false;
     	var sources = {
@@ -27,7 +113,7 @@
       };
 
 		var ctx = canvas.getContext("2d");
-	
+   	
 		// Make sure the image is loaded first otherwise nothing will draw.
 	  	loadImages(sources, function(images) {
   
@@ -42,7 +128,7 @@
             function Penny(x,y){
                 this.x = x;
                 this.y = y;
-                    this.image =images.penny ;
+                this.image =images.penny ;
             }
 
 
@@ -64,27 +150,33 @@
 			}
 
             Penny.prototype.draw = function (a) {
-                ctx.drawImage(this.image, this.x+ spaces[a], this.y,30,30);
+                ctx.drawImage(this.image, this.x+spaces[a], this.y,30,30);
             }
             Penny.prototype.update = function() {
-                
-                // if (this.y < (sjoe1.y+160) && this.y > sjoe1.y && this.x > sjoe1.x && this.x < (sjoe1.x+80) ) {
-                //     console.log("touch");
+                // console.log(pennies[10]);
+                //                 console.log(pennies[5]);          
+                if (this.y < (sjoe1.y+160) && this.y > sjoe1.y && this.x > sjoe1.x && this.x < (sjoe1.x+80) ) {
+                    console.log("touch");
                    
-                // }
-                // else{
+                }
+                else{
                    
-                // }
+                }       
                 this.x =  canvas.width-30-(j);
+                
             }
             var pennies = new Array();
-            for (var i = 0; i <= 1000; i++) {
-               pennies.push( new Penny(canvas.width, Math.floor((Math.random() * 275) + 1) +50 ));
-               spaces.push(Math.floor((Math.random() * 200000  ) + 1));
-
+            for (var i = 0; i <= 3   ; i++) {
+               spaces.push(Math.floor((Math.random() * 2000  ) + 1));
+            //    pennies.push( new Penny(canvas.width  ,Math.floor((Math.random() * 275) + 1) +50 ));
+ 
             }
+            // pennies.push( new Penny(canvas.width  ,Math.floor((Math.random() * 275) + 1) +50 ));
             console.log(pennies);
-         
+            var penny1 =new Penny(canvas.width-Math.floor((Math.random() * 275) + 1)  ,Math.floor((Math.random() * 275) + 1) +50 );
+            var penny2 =new Penny(canvas.width-Math.floor((Math.random() * 275) + 1)  ,Math.floor((Math.random() * 275) + 1) +50 );
+            var penny3 =new Penny(canvas.width-Math.floor((Math.random() * 275) + 1)  ,Math.floor((Math.random() * 275) + 1) +50 );
+            var penny4 =new Penny(canvas.width-Math.floor((Math.random() * 275) + 1)  ,Math.floor((Math.random() * 275) + 1) +50 );
 			var sjoe1 = new Sjoe(400, 275);
 			var requestAnim = window.requestAnimationFrame ||
                     window.webkitRequestAnimationFrame ||
@@ -105,27 +197,37 @@
 	  			}
 	  			j++;
 	       		// Redraw the grass where it is supposed to be
-                for (var i = 0; i <=1000; i++) {
-                    pennies[i].draw(i);
-                }
+                // for (var i = 0; i < pennies.length; i++) {
+                //     pennies[i].draw();
+                // }
+                penny1.draw(0);
+                penny2.draw(1);
+                penny3.draw(2);
+                penny4.draw(3);
                 sjoe1.draw();
        			// If the key is pressed, set velocity to -5
     			if (keypressed) {
         			sjoe1.velocity = -5;
         			keypressed = false;
     			}
-                for (var i = 0; i <=1000; i++) {
-                    pennies[i].update();
-                }
-    	
+                // for (var i = 0; i < pennies.length; i++) {
+                //     pennies[i].update();
+                // }
+    	     console.log();
+                penny1.update();
+                penny2.update();
+                penny3.update();
+                penny4.update();
                 sjoe1.update();
                 
-                j++;
+                j+=3;
 
     			// Do again
     			requestAnim(loop);
 			});
-                  console.log(sjoe1.y);
+            // setInterval(function(){ 
+            //     pennies.push( new Penny(1024+50 ,Math.floor((Math.random() * 275) + 1) +50 ));
+            // }, 3000);
 
             // keypresses=true by press of space
 			document.addEventListener('keydown', function (e) {
@@ -191,6 +293,8 @@
         }
       }
 </script>
+ -->
+
 
 </body>
 </html>
