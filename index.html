@@ -1,171 +1,362 @@
 <!DOCTYPE html>
 <html>
 <head>
-      <meta charset="utf-8" />
+    <meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
     <title>gewoon sjoe</title>
+    <style type="text/css">
+        html {
+            font-size: 0.625em;
+            height:100%;
+        }
+        body,html{
+            font-family: "Open Sans",Arial;
+            max-width: 100%;
+            overflow-x: hidden; 
+            min-height:100%;
+            background-color: #805436;
+        }
+
+    * {
+        margin: 0; 
+        padding: 0; 
+        -webkit-box-sizing: border-box; 
+        moz-box-sizing: border-box;
+        -ms-box-sizing: border-box;
+        -o-box-sizing: border-box;
+        box-sizing: border-box;
+    }
+    </style>
 </head>
 <body>
-<!-- <canvas  id="myCanvas" width="1024" height="470"></canvas> -->
+<div id="game"></div>
 <script src="./bower_components/jquery/dist/jquery.min.js"></script>
 <script src="./phaser.min.js"></script>
 <script type="text/javascript">
-var w = $( window ).width();
-var h = $( window ).height()
-   var game = new Phaser.Game(w, h, Phaser.AUTO, '', { preload: preload, create: create, update: update, checkPos: checkPos, collisionHandler : collisionHandler, updateSpeed :updateSpeed ,speedObj:speedObj,});
-    function preload () {
+/*
+/-------------------------
+/   set height and width
+/-------------------------
+*/
+var w = 1024;
+var h = 600;
 
-            game.load.image('bg', './assets/bg.jpg');
-            game.load.image('sjoe', 'assets/sjoe.png'); 
-            game.load.image('ground', 'assets/ground.png'); 
-            game.load.image('penny', 'assets/penny.png'); 
-            game.load.image('emiel', 'assets/emiel.png'); 
-            game.load.audio('sfx', 'assets/p-ping.mp3');
-            game.load.audio('cash', 'assets/cash.mp3');
+// for mobile 
 
-        }
+if ($( window ).width() <= 1024) {
+   w = $( window ).width();
+   h = $( window ).height(); 
+}
+else{
+    $('#game').css('margin-left' , (  $( window ).width() - w)/2);
+    $('#game').css('margin-top' , (  $( window ).height() - h )/2);
+}
 
-        var sjoe;
-        var ground;
-        var spaceKey;
-        var penniesGroup;
-        var emielGroup;
-        var text;
-        var count;
-        var fx;
-        var highScore = 0;
-        if(localStorage.getItem("highScore")!= null) {
-            highScore = localStorage.getItem("highScore");
-        }
-        var timer
-        var speed = 200;
-        var level = 0;
-        
-        function create () {
-            //  Create our Timer
-            timer = game.time.create(false);
-            //  Set a TimerEvent to occur after 2 seconds
-            timer.loop(8000, updateSpeed, this);
-                timer.start();
-            fx = game.add.audio('sfx');
-            fx.allowMultiple = true;
-            csh = game.add.audio('cash');
-            csh.allowMultiple = true;
-            game.add.tileSprite(0, 0, w, h, 'bg');
-            text = game.add.text(0, 0, "Score: 0    High score: " + highScore + "   Level " +level, {
-                font: "16px Arial",
-                fill: "#fff",
-            });
+/*
+/-------------------------
+/   start new game
+/-------------------------
+*/
 
-            game.physics.startSystem(Phaser.Physics.ARCADE);
-            penniesGroup = game.add.physicsGroup();
-            emielGroup = game.add.physicsGroup();
-            count = 0;
-            for (var i = 0; i < 14; i++)
-            {
-                var pennies = penniesGroup.create(1024+Math.floor((Math.random() * 2000) + 1), Math.floor((Math.random() * (h-80-50)) + 1), 'penny');
-                pennies.body.velocity.x = -200;        
-                pennies.scale.setTo(0.015,0.015);
+var game = new Phaser.Game(w, h, Phaser.CANVAS, 'game', { preload: preload, create: create, update: update, checkPosPenny: checkPosPenny, checkPosEmiel: checkPosEmiel, collisionHandler : collisionHandler, updateSpeed :updateSpeed ,speedObj:speedObj,checkPosPenny:checkPosPenny,checkPosEmiel:checkPosEmiel,});
+/*
+/-------------------------
+/   get pic, sound, ...
+/-------------------------
+*/
 
-            }
-            for (var i = 0; i < 3; i++)
-            {
-                var emiel = emielGroup.create(1024+Math.floor((Math.random() * 2000) + 1), Math.floor((Math.random() * (h-80-85)) + 1), 'emiel');
-                emiel.body.velocity.x = -200;        
-                emiel.scale.setTo(0.15,0.15);
+function preload () {
 
-            }
-            sjoe = game.add.sprite((w/2)-30,0,'sjoe');
-            sjoe.y = h-80-180;
-    
-            sjoe.scale.setTo(0.25, 0.25);
-            game.physics.arcade.enable(sjoe, Phaser.Physics.ARCADE);
+    game.load.image('bg', './assets/bg.jpg');
+    game.load.image('sjoe', 'assets/sjoe.png'); 
+    game.load.image('ground', 'assets/ground.png'); 
+    game.load.image('penny', 'assets/penny.png'); 
+    game.load.image('emiel', 'assets/emiel.png'); 
+    game.load.audio('sfx', 'assets/p-ping.mp3');
+    game.load.audio('cash', 'assets/cash.mp3');
 
-            sjoe.body.velocity.y=2000;
-            sjoe.body.collideWorldBounds = false;
-            sjoe.body.bounce.set(0);
-            sjoe.body.gravity.y=400;
+}
 
-            ground = this.game.add.tileSprite(0,h-80 , w, 80, 'ground');
-            game.physics.arcade.enable(ground, Phaser.Physics.ARCADE);
-            ground.autoScroll(-200, 0);
-            ground.body.allowGravity = false;
-            ground.body.immovable = true;
+/*
+/----------------------
+/   var
+/----------------------
+*/
 
-            this.spaceKey = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
-            game.input.keyboard.addKeyCapture(Phaser.Keyboard.SPACEBAR)
-            game.input.mouse.capture = true;
-            game.input.addPointer();
-         
-            console.log(emielGroup);
-        }
-
-        function update () {
-            game.physics.arcade.overlap(sjoe, penniesGroup, collisionHandler, null, this);
-            game.physics.arcade.overlap(sjoe, emielGroup, emielcollisionHandler, null, this);
-            game.physics.arcade.collide(sjoe,ground ); 
-             if (this.spaceKey.isDown ||game.input.activePointer.leftButton.isDown || game.input.pointer1.isDown){
-                sjoe.body.velocity.y = -250;
-             }
-            penniesGroup.forEach(checkPos, this);
-            emielGroup.forEach(checkPos, this);
-        }      
-
-        
-        function checkPos(pennies) {
-            if (pennies.x < -20)
-            {
-                pennies.x = w+Math.floor((Math.random() * 2000) + 1);
-                pennies.y = Math.floor((Math.random() * (h-80-85)) + 1)
-            }
-          
-
-        }
-        function collisionHandler(player , coin) {
-            coin.x = 1024+Math.floor((Math.random() * 2000) + 1);
-            coin.y = Math.floor((Math.random() * (h-80-50)) + 1);
-            fx.play();
-            count ++;
-
-             text.setText("Score: "+count+"    High score: " + highScore + "   Level " +level);
-
-        }
-        function emielcollisionHandler(player, emiel) {
-            emiel.x = 1024+Math.floor((Math.random() * 2000) + 1);
-            emiel.y = Math.floor((Math.random() * (h-80-85)) + 1);
-            if( count > highScore){
-                highScore = count;
-                localStorage.setItem("highScore", highScore);
-            }
-            csh.play();
-            level = 0;
-            speed = 200;
-            sjoe.x=(w/2)-30;
-            sjoe.y=h-80-180;
-            penniesGroup.forEach(restart, this);
-            emielGroup.forEach(restart, this);
-                        count = 0;
-            text.setText("Score: "+count+"    High score: " + highScore + "   Level " +level);
-
-        }function updateSpeed(argument) {
-            speed+= 60;
-            ground.autoScroll(-speed, 0);
-            penniesGroup.forEach(speedObj, this);
-            emielGroup.forEach(speedObj, this );
-            level++
-            text.setText("Score: "+count+"    High score: " + highScore + "   Level " +level);
+var sjoe;
+var ground;
+var spaceKey;
+var penniesGroup;
+var emielGroup;
+var text;
+var timer
+var fx;
+var highScore = 0;
+var count = 0;
+var speed = 200;
+var level = 0;
+// get prev high score 
+if(localStorage.getItem("highScore")!= null) {
+    highScore = localStorage.getItem("highScore");
+}
 
 
+/*
+/----------------------
+/   create function
+/----------------------
+*/
+function create () {
 
-        }
-        function speedObj(obj) {
-            obj.body.velocity.x = -speed;    
-        }
-        function restart(a) {
-            console.log(a);
-            a.x = 1024+Math.floor((Math.random() * 2000) + 1);
-            a.y = Math.floor((Math.random() * (h-80-85)) + 1);
-        }
+
+    //start 
+
+    game.physics.startSystem(Phaser.Physics.ARCADE);
+
+    //  Create our Timer
+    timer = game.time.create(false);
+
+    //  Set a TimerEvent to occur after 2 seconds
+
+    timer.loop(10000, updateSpeed, this);
+    timer.start();
+
+    // sound
+
+    fx = game.add.audio('sfx');
+    fx.allowMultiple = true;
+    csh = game.add.audio('cash');
+    csh.allowMultiple = true;
+
+    // text
+
+    game.add.tileSprite(0, 0, w, h, 'bg');
+    text = game.add.text(0, 0, "Score: 0    High score: " + highScore + "   Level " +level, {
+        font: "16px Arial",
+        fill: "#fff",
+    });
+
+    //inputs
+
+    this.spaceKey = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+    game.input.keyboard.addKeyCapture(Phaser.Keyboard.SPACEBAR)
+    game.input.mouse.capture = true;
+    game.input.addPointer();
+
+    //add group pennies 
+
+    penniesGroup = game.add.physicsGroup();
+    for (var i = 0; i < 14; i++)
+    {
+        var pennies = penniesGroup.create(w+Math.floor((Math.random() * 2000) + 1), Math.floor((Math.random() * (h-80-50)) + 1), 'penny');
+        pennies.body.velocity.x = -200;        
+        pennies.scale.setTo(0.015,0.015);
+
+    }
+
+    //add group emiel 
+  
+    emielGroup = game.add.physicsGroup();
+    for (var i = 0; i < 3; i++)
+    {
+        var emiel = emielGroup.create(w+Math.floor((Math.random() * 2000) + 1), Math.floor((Math.random() * (h-80-85)) + 1), 'emiel');
+        emiel.body.velocity.x = -200;        
+        emiel.scale.setTo(0.15,0.15);
+
+    }
+
+    //add sjoe 
+
+    sjoe = game.add.sprite((w/2)-30,0,'sjoe');
+    sjoe.y = h-80-180;
+
+    sjoe.scale.setTo(0.25, 0.25);
+    game.physics.arcade.enable(sjoe, Phaser.Physics.ARCADE);
+
+    sjoe.body.velocity.y=2000;
+    sjoe.body.collideWorldBounds = false;
+    sjoe.body.bounce.set(0);
+    sjoe.body.gravity.y=400;
+
+    //add ground 
+ 
+    ground = this.game.add.tileSprite(0,h-80 , w, 80, 'ground');
+    game.physics.arcade.enable(ground, Phaser.Physics.ARCADE);
+    ground.autoScroll(-200, 0);
+    ground.body.allowGravity = false;
+    ground.body.immovable = true;
+
+
+ 
+
+}
+
+/*
+/----------------------
+/   update function
+/----------------------
+*/
+
+function update () {
+
+    // redirect to handler sjoe and penny bump
+    game.physics.arcade.overlap(sjoe, penniesGroup, collisionHandler, null, this);
+
+    // redirect to handler sjoe and emiel bump
+    game.physics.arcade.overlap(sjoe, emielGroup, emielcollisionHandler, null, this);
+
+    // sjoe stay on the ground
+    game.physics.arcade.collide(sjoe,ground ); 
+
+    // inputs controls
+    if (this.spaceKey.isDown ||game.input.activePointer.leftButton.isDown || game.input.pointer1.isDown){
+        sjoe.body.velocity.y = -250;
+     }
+
+    // check of the pennies are @ the end
+    penniesGroup.forEach(checkPosPenny, this);
+    // check of Emiel is @ the end
+    emielGroup.forEach(checkPosEmiel, this);
+}      
+
+/*
+/----------------------
+/  set pos 0 for penny
+/----------------------
+*/
+
+function checkPosPenny(pennies) {
+    if (pennies.x < -20)
+    {
+        pennies.x = w+Math.floor((Math.random() * 2000) + 1);
+        pennies.y = Math.floor((Math.random() * (h-80-50)) + 1)
+    }
+  
+
+}
+
+/*
+/----------------------
+/  set pos 0 for Emiel
+/----------------------
+*/
+
+function checkPosEmiel(pennies) {
+    if (pennies.x < -20)
+    {
+        pennies.x = w+Math.floor((Math.random() * 2000) + 1);
+        pennies.y = Math.floor((Math.random() * (h-80-85)) + 1)
+    }
+  
+
+}
+
+/*
+/-------------------------------
+/  handle sjoe and penny bump
+/-------------------------------
+*/
+
+function collisionHandler(player , coin) {
+    //reset penny
+    coin.x = w+Math.floor((Math.random() * 2000) + 1);
+    coin.y = Math.floor((Math.random() * (h-80-50)) + 1);
+    // play ping
+    fx.play();
+    //add one point
+    count ++;
+    // update info
+    text.setText("Score: "+count+"    High score: " + highScore + "   Level " +level);
+
+}
+
+/*
+/-------------------------------
+/  handle sjoe and emiel bump
+/-------------------------------
+*/
+
+function emielcollisionHandler(player, emiel) {
+    // add new high score
+    if( count > highScore){
+        highScore = count;
+        localStorage.setItem("highScore", highScore);
+    }
+    // play cash sound
+    csh.play();
+    // set level back to 0
+    level = 0;
+    // set speed back to 200
+    speed = 200;
+    // reset sjoe
+    sjoe.x=(w/2)-30;
+    sjoe.y=h-80-180;
+    // reset pennies
+    penniesGroup.forEach(restartPenny, this);
+    // reset Emiel
+    emielGroup.forEach(restartEmiel, this);
+    // set score back to 0
+    count = 0;
+    // update info
+    text.setText("Score: "+count+"    High score: " + highScore + "   Level " +level);
+
+
+}
+
+/*
+/-------------------------------------------------------
+/   update x & y for each element in the penniesGroup
+/-------------------------------------------------------
+*/
+
+function restartPenny(a) {
+    a.x = w+Math.floor((Math.random() * 2000) + 1);
+    a.y = Math.floor((Math.random() * (h-80-50)) + 1);
+}
+
+/*
+/-------------------------------------------------------
+/   update x & y for each element in the penniesGroup
+/-------------------------------------------------------
+*/
+
+function restartEmiel(a) {
+    a.x = w+Math.floor((Math.random() * 2000) + 1);
+    a.y = Math.floor((Math.random() * (h-80-85)) + 1);
+}
+
+
+/*
+/-------------------------------
+/  update speed
+/-------------------------------
+*/
+
+function updateSpeed(argument) {
+    //count 80 by speed
+    speed += 80;
+    // set speed to ground
+    ground.autoScroll(-speed, 0);
+    // set speed to the pennies
+    penniesGroup.forEach(speedObj, this);
+    // set speen to Emiel
+    emielGroup.forEach(speedObj, this );
+    // add one level
+    level++
+    // update info
+    text.setText("Score: "+count+"    High score: " + highScore + "   Level " +level);
+
+}
+
+/*
+/----------------------------------------------
+/  update speed for each element in the group
+/----------------------------------------------
+*/
+
+function speedObj(obj) {
+    obj.body.velocity.x = -speed;    
+}
 
 </script>
 
