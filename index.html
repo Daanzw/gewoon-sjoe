@@ -2,6 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8" />
+    <meta property="og:image" content="./assets/linksjoe.png" />
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
     <title>gewoon sjoe</title>
     <style type="text/css">
@@ -41,7 +42,7 @@
 var w = 1024;
 var h = 600;
 
-// for mobile 
+// for mobile  
 
 if ($( window ).width() <= 1024) {
    w = $( window ).width();
@@ -128,10 +129,13 @@ function create () {
     csh = game.add.audio('cash');
     csh.allowMultiple = true;
 
-    // text
+    // background
 
     game.add.tileSprite(0, 0, w, h, 'bg');
-    text = game.add.text(0, 0, "Score: 0    High score: " + highScore + "   Level " +level, {
+
+    // text
+
+    text = game.add.text(10, 10, "Score: 0    High score: " + highScore + "   Level " +level, {
         font: "16px Arial",
         fill: "#fff",
     });
