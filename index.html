@@ -10,14 +10,16 @@
 <script src="./bower_components/jquery/dist/jquery.min.js"></script>
 <script src="./phaser.min.js"></script>
 <script type="text/javascript">
-   var game = new Phaser.Game(1024, 500, Phaser.AUTO, '', { preload: preload, create: create, update: update, checkPos: checkPos, collisionHandler : collisionHandler, });
+   var game = new Phaser.Game(1024, 500, Phaser.AUTO, '', { preload: preload, create: create, update: update, checkPos: checkPos, collisionHandler : collisionHandler, updateSpeed :updateSpeed ,speedObj:speedObj,});
     function preload () {
 
             game.load.image('bg', './assets/bg.jpg');
             game.load.image('sjoe', 'assets/sjoe.png'); 
             game.load.image('ground', 'assets/ground.png'); 
             game.load.image('penny', 'assets/penny.png'); 
+            game.load.image('emiel', 'assets/emiel.png'); 
             game.load.audio('sfx', 'assets/p-ping.mp3');
+            game.load.audio('cash', 'assets/cash.mp3');
 
         }
 
@@ -25,25 +27,53 @@
         var ground;
         var spaceKey;
         var penniesGroup;
+        var emielGroup;
         var text;
         var count;
         var fx;
+        var highScore = 0;
+        if(localStorage.getItem("highScore")!= null) {
+            highScore = localStorage.getItem("highScore");
+        }
+        var timer
+        var speed = 200;
+        var level = 0;
+        
         function create () {
+            //  Create our Timer
+            timer = game.time.create(false);
+            //  Set a TimerEvent to occur after 2 seconds
+            timer.loop(8000, updateSpeed, this);
+                timer.start();
             fx = game.add.audio('sfx');
             fx.allowMultiple = true;
-
+            csh = game.add.audio('cash');
+            csh.allowMultiple = true;
             game.add.tileSprite(0, 0, 1024, 420, 'bg');
+            text = game.add.text(0, 0, "Score: 0    High score: " + highScore + "   Level " +level, {
+                font: "16px Arial",
+                fill: "#fff",
+            });
+
             game.physics.startSystem(Phaser.Physics.ARCADE);
             penniesGroup = game.add.physicsGroup();
+            emielGroup = game.add.physicsGroup();
             count = 0;
-            for (var i = 0; i < 20; i++)
+            for (var i = 0; i < 14; i++)
             {
                 var pennies = penniesGroup.create(1024+Math.floor((Math.random() * 2000) + 1), Math.floor((Math.random() * 380) + 1), 'penny');
                 pennies.body.velocity.x = -200;        
                 pennies.scale.setTo(0.015,0.015);
 
             }
-            sjoe = game.add.sprite(400, 200,'sjoe');
+            for (var i = 0; i < 3; i++)
+            {
+                var emiel = emielGroup.create(1024+Math.floor((Math.random() * 2000) + 1), Math.floor((Math.random() * 350) + 1), 'emiel');
+                emiel.body.velocity.x = -200;        
+                emiel.scale.setTo(0.15,0.15);
+
+            }
+            sjoe = game.add.sprite(400, 270,'sjoe');
             sjoe.scale.setTo(0.25, 0.25);
             game.physics.arcade.enable(sjoe, Phaser.Physics.ARCADE);
 
@@ -62,24 +92,19 @@
             game.input.keyboard.addKeyCapture(Phaser.Keyboard.SPACEBAR)
             game.input.mouse.capture = true;
             game.input.addPointer();
-            text = game.add.text(0, 0, "Coins: 0", {
-                font: "24px Arial",
-                fill: "#fff",
-            });
-
-      
-             
-                    
-
-
+         
+            console.log(emielGroup);
         }
+
         function update () {
             game.physics.arcade.overlap(sjoe, penniesGroup, collisionHandler, null, this);
+            game.physics.arcade.overlap(sjoe, emielGroup, emielcollisionHandler, null, this);
             game.physics.arcade.collide(sjoe,ground ); 
              if (this.spaceKey.isDown ||game.input.activePointer.leftButton.isDown || game.input.pointer1.isDown){
                 sjoe.body.velocity.y = -250;
              }
-               penniesGroup.forEach(checkPos, this);
+            penniesGroup.forEach(checkPos, this);
+            emielGroup.forEach(checkPos, this);
         }      
 
         
@@ -87,8 +112,9 @@
             if (pennies.x < -20)
             {
                 pennies.x = 1024+Math.floor((Math.random() * 2000) + 1);
-                pennies.y = Math.floor((Math.random() * 380) + 1)
+                pennies.y = Math.floor((Math.random() * 345) + 1)
             }
+          
 
         }
         function collisionHandler(player , coin) {
@@ -97,8 +123,44 @@
             fx.play();
             count ++;
 
-             text.setText("Coins: " + count );
+             text.setText("Score: "+count+"    High score: " + highScore + "   Level " +level);
 
+        }
+        function emielcollisionHandler(player, emiel) {
+            emiel.x = 1024+Math.floor((Math.random() * 2000) + 1);
+            emiel.y = Math.floor((Math.random() * 350) + 1);
+            if( count > highScore){
+                highScore = count;
+                localStorage.setItem("highScore", highScore);
+            }
+            csh.play();
+            level = 0;
+            speed = 200;
+            sjoe.x=400;
+            sjoe.y=270;
+            penniesGroup.forEach(restart, this);
+            emielGroup.forEach(restart, this);
+                        count = 0;
+            text.setText("Score: "+count+"    High score: " + highScore + "   Level " +level);
+
+        }function updateSpeed(argument) {
+            speed+= 60;
+            ground.autoScroll(-speed, 0);
+            penniesGroup.forEach(speedObj, this);
+            emielGroup.forEach(speedObj, this );
+            level++
+            text.setText("Score: "+count+"    High score: " + highScore + "   Level " +level);
+
+
+
+        }
+        function speedObj(obj) {
+            obj.body.velocity.x = -speed;    
+        }
+        function restart(a) {
+            console.log(a);
+            a.x = 1024+Math.floor((Math.random() * 2000) + 1);
+            a.y = Math.floor((Math.random() * 380) + 1);
         }
 
 </script>
