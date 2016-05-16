@@ -56,7 +56,7 @@
             this.spaceKey = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
             game.input.keyboard.addKeyCapture(Phaser.Keyboard.SPACEBAR)
             game.input.mouse.capture = true;
-
+            game.input.addPointer();
             text = game.add.text(0, 0, "Coins: 0", {
                 font: "24px Arial",
                 fill: "#fff",
@@ -71,7 +71,7 @@
         function update () {
             game.physics.arcade.overlap(sjoe, penniesGroup, collisionHandler, null, this);
             game.physics.arcade.collide(sjoe,ground ); 
-             if (this.spaceKey.isDown ||game.input.activePointer.leftButton.isDown){
+             if (this.spaceKey.isDown ||game.input.activePointer.leftButton.isDown || game.input.pointer1.isDown){
                 sjoe.body.velocity.y = -250;
              }
                penniesGroup.forEach(checkPos, this);
