@@ -37,17 +37,22 @@
 <script type="text/javascript">
 /*
 /-------------------------
-/   set height and width
+/   set pc or mobile
 /-------------------------
 */
+
+//var
 var w = 1024;
 var h = 600;
-
+var cPenny = 14;
+var cEmiel = 3;
 // for mobile  
 
 if ($( window ).width() <= 1024) {
    w = $( window ).width();
    h = $( window ).height(); 
+   cPenny = 10;
+   cEmiel = 2;
 }
 else{
     $('#game').css('margin-left' , (  $( window ).width() - w)/2);
@@ -151,7 +156,7 @@ function create () {
     //add group pennies 
 
     penniesGroup = game.add.physicsGroup();
-    for (var i = 0; i < 14; i++)
+    for (var i = 0; i < cPenny; i++)
     {
         var pennies = penniesGroup.create(w+Math.floor((Math.random() * 2000) + 1), Math.floor((Math.random() * (h-80-50)) + 1), 'penny');
         pennies.body.velocity.x = -200;        
@@ -162,7 +167,7 @@ function create () {
     //add group emiel 
   
     emielGroup = game.add.physicsGroup();
-    for (var i = 0; i < 3; i++)
+    for (var i = 0; i < cEmiel; i++)
     {
         var emiel = emielGroup.create(w+Math.floor((Math.random() * 2000) + 1), Math.floor((Math.random() * (h-80-85)) + 1), 'emiel');
         emiel.body.velocity.x = -200;        
