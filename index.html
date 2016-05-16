@@ -17,6 +17,7 @@
             game.load.image('sjoe', 'assets/sjoe.png'); 
             game.load.image('ground', 'assets/ground.png'); 
             game.load.image('penny', 'assets/penny.png'); 
+            game.load.audio('sfx', 'assets/p-ping.mp3');
 
         }
 
@@ -26,7 +27,11 @@
         var penniesGroup;
         var text;
         var count;
+        var fx;
         function create () {
+            fx = game.add.audio('sfx');
+            fx.allowMultiple = true;
+
             game.add.tileSprite(0, 0, 1024, 420, 'bg');
             game.physics.startSystem(Phaser.Physics.ARCADE);
             penniesGroup = game.add.physicsGroup();
@@ -88,7 +93,8 @@
         }
         function collisionHandler(player , coin) {
             coin.x = 1024+Math.floor((Math.random() * 2000) + 1);
-            coin.y = Math.floor((Math.random() * 380) + 1)
+            coin.y = Math.floor((Math.random() * 380) + 1);
+            fx.play();
             count ++;
 
              text.setText("Coins: " + count );
