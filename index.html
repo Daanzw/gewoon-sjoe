@@ -55,7 +55,7 @@
 
             this.spaceKey = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
             game.input.keyboard.addKeyCapture(Phaser.Keyboard.SPACEBAR)
-
+            game.input.mouse.capture = true;
 
             text = game.add.text(0, 0, "Coins: 0", {
                 font: "24px Arial",
@@ -71,7 +71,7 @@
         function update () {
             game.physics.arcade.overlap(sjoe, penniesGroup, collisionHandler, null, this);
             game.physics.arcade.collide(sjoe,ground ); 
-             if (this.spaceKey.isDown){
+             if (this.spaceKey.isDown ||game.input.activePointer.leftButton.isDown){
                 sjoe.body.velocity.y = -250;
              }
                penniesGroup.forEach(checkPos, this);
@@ -82,11 +82,13 @@
             if (pennies.x < -20)
             {
                 pennies.x = 1024+Math.floor((Math.random() * 2000) + 1);
+                pennies.y = Math.floor((Math.random() * 380) + 1)
             }
 
         }
         function collisionHandler(player , coin) {
             coin.x = 1024+Math.floor((Math.random() * 2000) + 1);
+            coin.y = Math.floor((Math.random() * 380) + 1)
             count ++;
 
              text.setText("Coins: " + count );
@@ -94,206 +96,7 @@
         }
 
 </script>
-<!-- <script type="text/javascript">
 
-    	var canvas = document.getElementById("myCanvas");
-    	// Gravity, how fast it goes down
-    	var gravity = 0.3;
-    	var j = 0;
-        var spaces = new Array();
-        var coins = 10000;
-    	// Whether or not the up key is pressed
-		var keypressed = false;
-    	var sources = {
-        bg: './assets/bg.jpg',
-        ground: './assets/ground.png',
-        sjoe: './assets/sjoe.png',
-        alian: './assets/alian.png',
-        penny: './assets/penny.png'
-      };
-
-		var ctx = canvas.getContext("2d");
-   	
-		// Make sure the image is loaded first otherwise nothing will draw.
-	  	loadImages(sources, function(images) {
-  
-  			function Sjoe(x, y) {
-    			this.x = x;
-    			this.y = y;
-    			// How fast we are moving
-    			this.velocity = 10;
-    			this.image =images.sjoe ;
-
-			}
-            function Penny(x,y){
-                this.x = x;
-                this.y = y;
-                this.image =images.penny ;
-            }
-
-
-			Sjoe.prototype.draw = function () {
-
-    			ctx.drawImage(this.image, this.x, this.y,80,160);
-			}
-			Sjoe.prototype.update = function() {
-		    	// Check if we are underground
-    			if (this.y + this.velocity + 36 > 275) {
-        			// If so, move us back to ground level and set velocity to zero
-        			this.velocity = 0;
-        			this.y = 275 - 36;
-    			} else {
-        			// Otherwise, move what is indicated by velocity
-        			this.velocity += gravity;
-        			this.y += this.velocity;
-    			}	 
-			}
-
-            Penny.prototype.draw = function (a) {
-                ctx.drawImage(this.image, this.x+spaces[a], this.y,30,30);
-            }
-            Penny.prototype.update = function() {
-                // console.log(pennies[10]);
-                //                 console.log(pennies[5]);          
-                if (this.y < (sjoe1.y+160) && this.y > sjoe1.y && this.x > sjoe1.x && this.x < (sjoe1.x+80) ) {
-                    console.log("touch");
-                   
-                }
-                else{
-                   
-                }       
-                this.x =  canvas.width-30-(j);
-                
-            }
-            var pennies = new Array();
-            for (var i = 0; i <= 3   ; i++) {
-               spaces.push(Math.floor((Math.random() * 2000  ) + 1));
-            //    pennies.push( new Penny(canvas.width  ,Math.floor((Math.random() * 275) + 1) +50 ));
- 
-            }
-            // pennies.push( new Penny(canvas.width  ,Math.floor((Math.random() * 275) + 1) +50 ));
-            console.log(pennies);
-            var penny1 =new Penny(canvas.width-Math.floor((Math.random() * 275) + 1)  ,Math.floor((Math.random() * 275) + 1) +50 );
-            var penny2 =new Penny(canvas.width-Math.floor((Math.random() * 275) + 1)  ,Math.floor((Math.random() * 275) + 1) +50 );
-            var penny3 =new Penny(canvas.width-Math.floor((Math.random() * 275) + 1)  ,Math.floor((Math.random() * 275) + 1) +50 );
-            var penny4 =new Penny(canvas.width-Math.floor((Math.random() * 275) + 1)  ,Math.floor((Math.random() * 275) + 1) +50 );
-			var sjoe1 = new Sjoe(400, 275);
-			var requestAnim = window.requestAnimationFrame ||
-                    window.webkitRequestAnimationFrame ||
-                    window.mozRequestAnimationFrame ||
-                    setInterval;
-
-            requestAnim(function loop() {
-    			// Clear the screen
-    			ctx.clearRect(0, 0, canvas.width, canvas.height);
-    			ctx.drawImage(images.bg, 0,0);
-                // ctx.drawImage(images.alian, 400-(j/3),250,60,60);
-                // for (var i = 0; i*(images.bg.width)-(j/2) < canvas.width ; i++) {
-                //     ctx.drawImage(images.bg, i*(images.bg.width)-(j/2), 0);
-                // }
-
-    			for (var i = 0; i*(images.ground.width)-(j) < canvas.width ; i++) {
-				ctx.drawImage(images.ground, i*(images.ground.width)-(j) , 400);
-	  			}
-	  			j++;
-	       		// Redraw the grass where it is supposed to be
-                // for (var i = 0; i < pennies.length; i++) {
-                //     pennies[i].draw();
-                // }
-                penny1.draw(0);
-                penny2.draw(1);
-                penny3.draw(2);
-                penny4.draw(3);
-                sjoe1.draw();
-       			// If the key is pressed, set velocity to -5
-    			if (keypressed) {
-        			sjoe1.velocity = -5;
-        			keypressed = false;
-    			}
-                // for (var i = 0; i < pennies.length; i++) {
-                //     pennies[i].update();
-                // }
-    	     console.log();
-                penny1.update();
-                penny2.update();
-                penny3.update();
-                penny4.update();
-                sjoe1.update();
-                
-                j+=3;
-
-    			// Do again
-    			requestAnim(loop);
-			});
-            // setInterval(function(){ 
-            //     pennies.push( new Penny(1024+50 ,Math.floor((Math.random() * 275) + 1) +50 ));
-            // }, 3000);
-
-            // keypresses=true by press of space
-			document.addEventListener('keydown', function (e) {
-    
-    			if (e.keyCode == '32') {
-        			keypressed = true;
-    			}
-			}, false);
-            
-            //check of it is a mobile
-            var isMobile = {
-                Android: function() {
-                    return navigator.userAgent.match(/Android/i);
-                },
-                BlackBerry: function() {
-                    return navigator.userAgent.match(/BlackBerry/i);
-                },
-                iOS: function() {
-                    return navigator.userAgent.match(/iPhone|iPad|iPod/i);
-                },
-                Opera: function() {
-                    return navigator.userAgent.match(/Opera Mini/i);
-                },
-                Windows: function() {
-                    return navigator.userAgent.match(/IEMobile/i);
-                },
-                any: function() {
-                    return (isMobile.Android() || isMobile.BlackBerry() || isMobile.iOS() || isMobile.Opera() || isMobile.Windows());
-                }
-            };
-            // keypresses=true by touch or click
-			$('#myCanvas').on(isMobile ? 'touchend' : 'click', function () { 
-  				keypressed = true; 
-			});
-
-
-
-
-
-	
-			
-	  });
-        
- 
-
-
-	  function loadImages(sources, callback) {
-        var images = {};
-        var loadedImages = 0;
-        var numImages = 0;
-        // get num of sources
-        for(var src in sources) {
-          numImages++;
-        }
-        for(var src in sources) {
-          images[src] = new Image();
-          images[src].onload = function() {
-            if(++loadedImages >= numImages) {
-              callback(images);
-            }
-          };
-          images[src].src = sources[src];
-        }
-      }
-</script>
- -->
 
 
 </body>
